@@ -12,7 +12,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <main className="flex-1 flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
+        <main className="flex-1 flex flex-col bg-white overflow-hidden">
           <Header />
           <div className="flex-1 overflow-auto">
             <div className="max-w-7xl mx-auto">

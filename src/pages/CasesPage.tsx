@@ -1,97 +1,62 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { PlusCircle, FileText, Search, Filter, UserPlus } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-const mockCases = [
-  {
-    id: '2024-001',
-    title: 'תביעת נזיקין - אברהם נגד החברה הכלכלית',
-    client: 'יוסף אברהם',
-    attorney: 'עו"ד דוד לוי',
-    type: 'תביעה אזרחית',
-    status: 'בטיפול',
-    statusColor: 'bg-blue-500',
-    lastUpdated: '10/06/2024',
-    nextDeadline: '15/06/2024',
-  },
-  {
-    id: '2024-002',
-    title: 'הסכם מקרקעין - רכישת דירה',
-    client: 'משפחת לוי',
-    attorney: 'עו"ד רחל כהן',
-    type: 'עסקאות מקרקעין',
-    status: 'ממתין לחתימה',
-    statusColor: 'bg-blue-500',
-    lastUpdated: '09/06/2024',
-    nextDeadline: '20/06/2024',
-  },
-  {
-    id: '2024-003',
-    title: 'תיק פלילי - הגנה על נהג',
-    client: 'דוד כהן',
-    attorney: 'עו"ד משה גרינברג',
-    type: 'פלילי',
-    status: 'הושלם',
-    statusColor: 'bg-green-500',
-    lastUpdated: '07/06/2024',
-    nextDeadline: '-',
-  },
-  {
-    id: '2024-004',
-    title: 'ערעור מס הכנסה',
-    client: 'חברת אלפא בע"מ',
-    attorney: 'עו"ד שרה לוי',
-    type: 'מיסים',
-    status: 'בהמתנה',
-    statusColor: 'bg-blue-500',
-    lastUpdated: '05/06/2024',
-    nextDeadline: '30/06/2024',
-  },
-  {
-    id: '2024-005',
-    title: 'סכסוך עבודה - פיטורין שלא כדין',
-    client: 'רונית אברהם',
-    attorney: 'עו"ד דוד לוי',
-    type: 'דיני עבודה',
-    status: 'בטיפול',
-    statusColor: 'bg-blue-500',
-    lastUpdated: '02/06/2024',
-    nextDeadline: '25/06/2024',
-  },
-];
+  PlusCircle, 
+  UserPlus, 
+  Search, 
+  Filter, 
+  Eye, 
+  Edit, 
+  Trash2,
+  Calendar,
+  Clock,
+  DollarSign,
+  FileText,
+  Upload
+} from 'lucide-react';
+import { getCases, Case, deleteCase, fixCaseNumbers } from '@/lib/dataManager';
 
 export default function CasesPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredCases, setFilteredCases] = useState(mockCases);
+  const [filteredCases, setFilteredCases] = useState<Case[]>([]);
+  const [allCases, setAllCases] = useState<Case[]>([]);
+
+  const loadCases = () => {
+    const cases = getCases();
+    setAllCases(cases);
+    setFilteredCases(cases);
+  };
+
+  useEffect(() => {
+    // Load cases from dataManager
+    loadCases();
+  }, []);
+
+  // Refresh data when returning from forms
+  useEffect(() => {
+    if (location.pathname === '/cases') {
+      loadCases();
+    }
+  }, [location.pathname]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
     
-    if (!value) {
-      setFilteredCases(mockCases);
+    if (!value.trim()) {
+      setFilteredCases(allCases);
       return;
     }
     
-    const filtered = mockCases.filter(
+    const filtered = allCases.filter(
       (case_) => 
         case_.title.includes(value) || 
         case_.client.includes(value) ||
@@ -99,6 +64,56 @@ export default function CasesPage() {
     );
     
     setFilteredCases(filtered);
+  };
+
+  const handleNewCase = () => {
+    navigate('/cases/new');
+  };
+
+  const handleNewClient = () => {
+    navigate('/clients/new');
+  };
+
+  const handleViewCase = (caseId: string) => {
+    navigate(`/cases/${caseId}/view`);
+  };
+
+  const handleEditCase = (caseId: string) => {
+    navigate(`/cases/${caseId}/edit`);
+  };
+
+  const handleDeleteCase = (caseId: string, caseTitle: string) => {
+    const confirmed = window.confirm(`האם אתה בטוח שברצונך למחוק את התיק "${caseTitle}"?`);
+    if (confirmed) {
+      const success = deleteCase(caseId);
+      if (success) {
+        loadCases(); // Refresh the list
+        alert('התיק נמחק בהצלחה');
+      } else {
+        alert('שגיאה במחיקת התיק');
+      }
+    }
+  };
+
+  const handleFixCaseNumbers = () => {
+    const confirmed = window.confirm('האם אתה בטוח שברצונך לתקן את מספרי התיקים כך שיתחילו מ-1000? פעולה זו תשנה מספרי תיקים קיימים.');
+    if (confirmed) {
+      fixCaseNumbers();
+      loadCases(); // Refresh the list
+      alert('מספרי התיקים תוקנו בהצלחה!');
+    }
+  };
+
+  const handleUploadDocuments = (caseId: string, caseTitle: string) => {
+    navigate(`/cases/${caseId}/documents/upload`, { 
+      state: { caseTitle } 
+    });
+  };
+
+  const handleViewDocuments = (caseId: string, caseTitle: string) => {
+    navigate(`/cases/${caseId}/documents`, { 
+      state: { caseTitle } 
+    });
   };
 
   const getStatusClass = (status: string) => {
@@ -111,6 +126,29 @@ export default function CasesPage() {
     }
   };
 
+  const getCaseTypeText = (type: string) => {
+    const typeMap: { [key: string]: string } = {
+      'civil': 'תביעה אזרחית',
+      'real-estate': 'עסקאות מקרקעין',
+      'criminal': 'פלילי',
+      'tax': 'מיסים',
+      'labor': 'דיני עבודה',
+      'family': 'דיני משפחה',
+      'corporate': 'חברות'
+    };
+    return typeMap[type] || type;
+  };
+
+  const getPriorityText = (priority: string) => {
+    const priorityMap: { [key: string]: string } = {
+      'low': 'נמוכה',
+      'medium': 'בינונית',
+      'high': 'גבוהה',
+      'urgent': 'דחופה'
+    };
+    return priorityMap[priority] || priority;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -121,11 +159,14 @@ export default function CasesPage() {
           </p>
         </div>
         <div className="flex gap-2 self-end">
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={handleNewCase}>
             <PlusCircle className="h-4 w-4" /> תיק חדש
           </Button>
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={handleNewClient}>
             <UserPlus className="h-4 w-4" /> הוסף לקוח
+          </Button>
+          <Button variant="outline" className="gap-2" onClick={handleFixCaseNumbers}>
+            <DollarSign className="h-4 w-4" /> תקן מספרי תיקים
           </Button>
         </div>
       </div>
@@ -187,33 +228,88 @@ export default function CasesPage() {
                   <TableHead className="hidden lg:table-cell text-slate-800 font-semibold">לקוח</TableHead>
                   <TableHead className="hidden lg:table-cell text-slate-800 font-semibold">עו"ד מטפל</TableHead>
                   <TableHead className="hidden md:table-cell text-slate-800 font-semibold">סוג</TableHead>
-                  <TableHead className="text-slate-800 font-semibold">סטטוס</TableHead>
-                  <TableHead className="hidden md:table-cell text-slate-800 font-semibold">עדכון אחרון</TableHead>
-                  <TableHead className="text-right text-slate-800 font-semibold">דדליין</TableHead>
+                  <TableHead className="hidden md:table-cell text-slate-800 font-semibold">עדיפות</TableHead>
+                  <TableHead className="hidden lg:table-cell text-slate-800 font-semibold">סטטוס</TableHead>
+                  <TableHead className="hidden lg:table-cell text-slate-800 font-semibold">תקציב</TableHead>
+                  <TableHead className="text-slate-800 font-semibold">פעולות</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCases.map((case_) => (
-                  <TableRow key={case_.id} className="hover:bg-slate-100 border-slate-200 transition-colors">
-                    <TableCell className="font-medium text-slate-800">{case_.id}</TableCell>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-primary" />
-                        <span className="text-slate-800">{case_.title}</span>
-                      </div>
+                {filteredCases.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center py-8 text-gray-500">
+                      אין תיקים להצגה. לחץ על "תיק חדש" כדי להתחיל.
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell text-slate-700">{case_.client}</TableCell>
-                    <TableCell className="hidden lg:table-cell text-slate-700">{case_.attorney}</TableCell>
-                    <TableCell className="hidden md:table-cell text-slate-700">{case_.type}</TableCell>
-                    <TableCell>
-                      <Badge className={`${case_.statusColor} text-white`}>
-                        {case_.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell text-slate-700">{case_.lastUpdated}</TableCell>
-                    <TableCell className="text-right text-slate-700">{case_.nextDeadline}</TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  filteredCases.map((case_) => (
+                    <TableRow key={case_.id} className="border-slate-300">
+                      <TableCell className="font-medium text-slate-900">{case_.id}</TableCell>
+                      <TableCell className="text-slate-900">{case_.title}</TableCell>
+                      <TableCell className="hidden lg:table-cell text-slate-700">{case_.client}</TableCell>
+                      <TableCell className="hidden lg:table-cell text-slate-700">עו"ד מטפל</TableCell>
+                      <TableCell className="hidden md:table-cell text-slate-700">{getCaseTypeText(case_.caseType)}</TableCell>
+                      <TableCell className="hidden md:table-cell text-slate-700">{getPriorityText(case_.priority)}</TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <Badge className={getStatusClass(case_.status)}>
+                          {case_.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell text-slate-700">
+                        {case_.budget ? `₪${case_.budget}` : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={() => handleViewCase(case_.id)}
+                            title="צפייה בתיק"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={() => handleEditCase(case_.id)}
+                            title="עריכת תיק"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-8 w-8 text-purple-600 hover:text-purple-700"
+                            onClick={() => handleViewDocuments(case_.id, case_.title)}
+                            title="צפייה במסמכים"
+                          >
+                            <FileText className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-8 w-8 text-green-600 hover:text-green-700"
+                            onClick={() => handleUploadDocuments(case_.id, case_.title)}
+                            title="תיוק מסמכים"
+                          >
+                            <Upload className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-8 w-8 text-red-600 hover:text-red-700"
+                            onClick={() => handleDeleteCase(case_.id, case_.title)}
+                            title="מחיקת תיק"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

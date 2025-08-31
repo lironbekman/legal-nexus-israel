@@ -195,7 +195,7 @@ export function AppSidebar() {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
                       >
-                        <item.icon className={`h-5 w-5 ${isActive ? 'text-white' : item.color}`} />
+                        <item.icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-blue-600'}`} />
                       </motion.div>
                       <span className="font-medium">{item.title}</span>
                       {isActive && (

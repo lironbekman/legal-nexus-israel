@@ -10,30 +10,30 @@
 @layer base {
   :root {
     /* Clean Light Theme - Professional Blue-White */
-    --background: 249 250 251; /* Light gray background */
-    --foreground: 31 41 55; /* Dark gray text */
+    --background: 255 255 255; /* Pure white background */
+    --foreground: 0 0 0; /* Pure black text */
 
     /* Card styles - Clean white with subtle shadows */
     --card: 255 255 255;
-    --card-foreground: 31 41 55;
+    --card-foreground: 0 0 0;
 
     /* Popover styles */
     --popover: 255 255 255;
-    --popover-foreground: 31 41 55;
+    --popover-foreground: 0 0 0;
 
     /* Beautiful Blue-White Color Palette */
     --primary: 59 130 246; /* Beautiful bright blue */
     --primary-foreground: 255 255 255;
 
     --secondary: 248 250 252; /* Clean light blue-gray */
-    --secondary-foreground: 51 65 85;
+    --secondary-foreground: 0 0 0;
 
     /* UI Elements */
     --muted: 248 250 252;
-    --muted-foreground: 107 114 128;
+    --muted-foreground: 0 0 0;
 
     --accent: 248 250 252;
-    --accent-foreground: 31 41 55;
+    --accent-foreground: 0 0 0;
 
     --destructive: 239 68 68;
     --destructive-foreground: 255 255 255;
@@ -46,7 +46,7 @@
 
     /* Beautiful Blue-White Sidebar */
     --sidebar-background: 255 255 255; /* Pure white */
-    --sidebar-foreground: 51 65 85; /* Dark blue-gray text */
+    --sidebar-foreground: 0 0 0; /* Pure black text */
     --sidebar-primary: 59 130 246; /* Beautiful blue */
     --sidebar-primary-foreground: 255 255 255;
     --sidebar-accent: 239 246 255; /* Very light blue for hover */
@@ -64,25 +64,25 @@
 
   .dark {
     --background: 17 24 39;
-    --foreground: 243 244 246;
+    --foreground: 255 255 255; /* Pure white in dark mode */
 
     --card: 31 41 55;
-    --card-foreground: 243 244 246;
+    --card-foreground: 255 255 255;
 
     --popover: 31 41 55;
-    --popover-foreground: 243 244 246;
+    --popover-foreground: 255 255 255;
 
     --primary: 99 102 241;
     --primary-foreground: 255 255 255;
 
     --secondary: 55 65 81;
-    --secondary-foreground: 209 213 219;
+    --secondary-foreground: 255 255 255;
 
     --muted: 55 65 81;
-    --muted-foreground: 156 163 175;
+    --muted-foreground: 255 255 255;
 
     --accent: 55 65 81;
-    --accent-foreground: 243 244 246;
+    --accent-foreground: 255 255 255;
 
     --destructive: 239 68 68;
     --destructive-foreground: 255 255 255;
@@ -101,13 +101,69 @@
     font-family: 'Poppins', sans-serif;
   }
 
-  .font-body {
-    font-family: 'Open Sans', sans-serif;
+  /* Global text color override */
+  * {
+    color: #000000 !important;
   }
 
-  /* RTL support for the app */
+  /* Ensure all text is black by default */
   body {
-    direction: rtl;
+    color: #000000 !important;
+    background-color: #ffffff !important;
+  }
+
+  /* Override any yellow backgrounds */
+  [class*="bg-yellow"],
+  [class*="bg-amber"],
+  [class*="bg-orange"] {
+    background-color: #f8fafc !important; /* Light gray instead of yellow */
+  }
+
+  /* Override any yellow text */
+  [class*="text-yellow"],
+  [class*="text-amber"],
+  [class*="text-orange"] {
+    color: #000000 !important;
+  }
+
+  /* Override any yellow borders */
+  [class*="border-yellow"],
+  [class*="border-amber"],
+  [class*="border-orange"] {
+    border-color: #e2e8f0 !important; /* Light gray instead of yellow */
+  }
+
+  /* Override focus states that might be yellow */
+  [class*="focus:bg-yellow"],
+  [class*="focus:bg-amber"],
+  [class*="focus:bg-orange"] {
+    background-color: #f1f5f9 !important; /* Light gray instead of yellow */
+  }
+
+  /* Override hover states that might be yellow */
+  [class*="hover:bg-yellow"],
+  [class*="hover:bg-amber"],
+  [class*="hover:bg-orange"] {
+    background-color: #f1f5f9 !important; /* Light gray instead of yellow */
+  }
+
+  /* Override data states that might be yellow */
+  [data-state="open"],
+  [data-state="selected"],
+  [data-state="checked"] {
+    background-color: #f1f5f9 !important; /* Light gray instead of yellow */
+    color: #000000 !important;
+  }
+
+  /* Override any accent colors that might be yellow */
+  .bg-accent,
+  .bg-accent\/50,
+  .bg-accent\/80 {
+    background-color: #f1f5f9 !important; /* Light gray instead of yellow */
+  }
+
+  .text-accent-foreground {
+    color: #000000 !important;
   }
 }
 

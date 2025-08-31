@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -104,6 +105,7 @@ const mockInvoices = [
 ];
 
 export default function BillingPage() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredInvoices, setFilteredInvoices] = useState(mockInvoices);
 
@@ -111,7 +113,7 @@ export default function BillingPage() {
     const value = e.target.value;
     setSearchTerm(value);
     
-    if (!value) {
+    if (!value.trim()) {
       setFilteredInvoices(mockInvoices);
       return;
     }
@@ -124,6 +126,34 @@ export default function BillingPage() {
     );
     
     setFilteredInvoices(filtered);
+  };
+
+  const handleNewInvoice = () => {
+    navigate('/billing/new');
+  };
+
+  const handleViewInvoice = (invoiceId: string) => {
+    navigate(`/billing/${invoiceId}`);
+  };
+
+  const handleDownloadInvoice = (invoiceId: string) => {
+    // Find the invoice
+    const invoice = mockInvoices.find(inv => inv.id === invoiceId);
+    if (invoice) {
+      // Simulate PDF download
+      alert(`מוריד חשבונית ${invoice.invoiceNumber} עבור ${invoice.client}`);
+      // In real implementation, this would generate and download a PDF
+    }
+  };
+
+  const handleSendInvoice = (invoiceId: string) => {
+    // Find the invoice
+    const invoice = mockInvoices.find(inv => inv.id === invoiceId);
+    if (invoice) {
+      // Simulate email sending
+      alert(`שולח חשבונית ${invoice.invoiceNumber} ללקוח ${invoice.client}`);
+      // In real implementation, this would send an email
+    }
   };
 
   const totalInvoices = mockInvoices.length;
@@ -146,7 +176,7 @@ export default function BillingPage() {
           </p>
         </div>
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Button className="gap-2 self-end bg-blue-600 hover:bg-blue-700">
+          <Button className="gap-2 self-end bg-blue-600 hover:bg-blue-700" onClick={handleNewInvoice}>
             <Plus className="h-4 w-4" /> חשבונית חדשה
           </Button>
         </motion.div>
@@ -363,15 +393,33 @@ export default function BillingPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-blue-100">
-                            <Eye className="h-4 w-4 text-blue-600" />
+                        <div className="flex justify-end gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                            onClick={() => handleViewInvoice(invoice.id)}
+                            title="צפייה בחשבונית"
+                          >
+                            <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-blue-100">
-                            <Download className="h-4 w-4 text-blue-600" />
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-green-600 hover:text-green-800 hover:bg-green-50"
+                            onClick={() => handleDownloadInvoice(invoice.id)}
+                            title="הורדת חשבונית"
+                          >
+                            <Download className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-blue-100">
-                            <Send className="h-4 w-4 text-blue-600" />
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-purple-600 hover:text-purple-800 hover:bg-purple-50"
+                            onClick={() => handleSendInvoice(invoice.id)}
+                            title="שליחת חשבונית"
+                          >
+                            <Send className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>

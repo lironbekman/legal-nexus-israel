@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -91,8 +92,13 @@ const currentWeek = [
 ];
 
 export default function CalendarPage() {
-  const [selectedDate, setSelectedDate] = useState('2024-06-20');
+  const navigate = useNavigate();
+  const [selectedDate, setSelectedDate] = useState('2024-06-15');
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week');
+
+  const handleNewEvent = () => {
+    navigate('/calendar/new');
+  };
 
   const getEventIcon = (type: string) => {
     switch (type) {
@@ -138,7 +144,7 @@ export default function CalendarPage() {
           </p>
         </div>
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Button className="gap-2 self-end bg-blue-600 hover:bg-blue-700">
+          <Button className="gap-2 self-end bg-blue-600 hover:bg-blue-700" onClick={handleNewEvent}>
             <Plus className="h-4 w-4" /> אירוע חדש
           </Button>
         </motion.div>

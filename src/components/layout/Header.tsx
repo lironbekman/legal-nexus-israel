@@ -13,7 +13,7 @@ import {
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 shadow-sm">
       <div className="flex h-20 items-center justify-between px-8">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">

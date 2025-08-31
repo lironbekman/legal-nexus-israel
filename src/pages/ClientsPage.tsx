@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Card, 
@@ -25,7 +26,10 @@ import {
   User, 
   Phone, 
   Mail,
-  FileText
+  FileText,
+  Eye,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import {
   Select,
@@ -34,92 +38,86 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getClients, Client, deleteClient } from '@/lib/dataManager';
 
-const mockClients = [
-  {
-    id: 'CL-001',
-    name: 'יוסף אברהם',
-    type: 'פרטי',
-    email: 'yosef@example.com',
-    phone: '052-1234567',
-    activeCases: 2,
-    status: 'פעיל',
-    statusColor: 'bg-green-500',
-    lastActivity: '10/06/2024'
-  },
-  {
-    id: 'CL-002',
-    name: 'משפחת לוי',
-    type: 'פרטי',
-    email: 'levi@example.com',
-    phone: '054-1234567',
-    activeCases: 1,
-    status: 'פעיל',
-    statusColor: 'bg-green-500',
-    lastActivity: '09/06/2024'
-  },
-  {
-    id: 'CL-003',
-    name: 'חברת אלפא בע"מ',
-    type: 'עסקי',
-    email: 'contact@alpha.co.il',
-    phone: '03-1234567',
-    activeCases: 3,
-    status: 'פעיל',
-    statusColor: 'bg-green-500',
-    lastActivity: '05/06/2024'
-  },
-  {
-    id: 'CL-004',
-    name: 'דוד כהן',
-    type: 'פרטי',
-    email: 'david@example.com',
-    phone: '050-1234567',
-    activeCases: 1,
-    status: 'לא פעיל',
-    statusColor: 'bg-gray-500',
-    lastActivity: '01/05/2024'
-  },
-  {
-    id: 'CL-005',
-    name: 'רונית אברהם',
-    type: 'פרטי',
-    email: 'ronit@example.com',
-    phone: '053-1234567',
-    activeCases: 1,
-    status: 'פעיל',
-    statusColor: 'bg-green-500',
-    lastActivity: '02/06/2024'
-  }
-];
+// Mock clients removed - now using real data from dataManager
 
 export default function ClientsPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredClients, setFilteredClients] = useState(mockClients);
+  const [allClients, setAllClients] = useState<Client[]>([]);
+  const [filteredClients, setFilteredClients] = useState<Client[]>([]);
+
+  const loadClients = () => {
+    const clients = getClients();
+    setAllClients(clients);
+    setFilteredClients(clients);
+  };
+
+  useEffect(() => {
+    // Load clients from dataManager
+    loadClients();
+  }, []);
+
+  // Refresh data when returning from forms
+  useEffect(() => {
+    if (location.pathname === '/clients') {
+      loadClients();
+    }
+  }, [location.pathname]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
     
     if (!value) {
-      setFilteredClients(mockClients);
+      setFilteredClients(allClients);
       return;
     }
     
-    const filtered = mockClients.filter(
+    const filtered = allClients.filter(
       (client) => 
         client.name.includes(value) || 
         client.email.includes(value) ||
         client.phone.includes(value) ||
+        client.idNumber.includes(value) ||
         client.id.includes(value)
     );
     
     setFilteredClients(filtered);
   };
 
-  const totalClients = mockClients.length;
-  const activeClients = mockClients.filter(c => c.status === 'פעיל').length;
-  const totalCases = mockClients.reduce((sum, client) => sum + client.activeCases, 0);
+  const handleViewClient = (clientId: string) => {
+    console.log('צפייה בלקוח:', clientId);
+    // TODO: Navigate to client view page
+    alert(`צפייה בלקוח ${clientId}`);
+  };
+
+  const handleEditClient = (clientId: string) => {
+    navigate(`/clients/${clientId}/edit`);
+  };
+
+  const handleDeleteClient = (clientId: string, clientName: string) => {
+    const confirmed = window.confirm(`האם אתה בטוח שברצונך למחוק את הלקוח "${clientName}"?`);
+    if (confirmed) {
+      const success = deleteClient(clientId);
+      if (success) {
+        loadClients(); // Refresh the list
+        alert(`לקוח ${clientName} נמחק בהצלחה`);
+      } else {
+        alert('שגיאה במחיקת הלקוח');
+      }
+    }
+  };
+
+  const handleNewClient = () => {
+    navigate('/clients/new');
+  };
+
+  const totalClients = allClients.length;
+  const activeClients = allClients.filter(c => c.status === 'פעיל').length;
+  const totalCases = allClients.reduce((sum, client) => sum + (client.activeCases || 0), 0);
 
   return (
     <div className="space-y-8 p-6">
@@ -136,7 +134,7 @@ export default function ClientsPage() {
           </p>
         </div>
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Button className="gap-2 self-end bg-blue-600 hover:bg-blue-700">
+          <Button className="gap-2 self-end bg-blue-600 hover:bg-blue-700" onClick={handleNewClient}>
             <PlusCircle className="h-4 w-4" /> לקוח חדש
           </Button>
         </motion.div>
@@ -204,7 +202,7 @@ export default function ClientsPage() {
               <div className="relative w-full sm:max-w-sm">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-blue-400" />
                 <Input
-                  placeholder="חפש לפי שם, אימייל או טלפון..."
+                  placeholder="חפש לפי שם, אימייל, טלפון או ת.ז..."
                   value={searchTerm}
                   onChange={handleSearch}
                   className="w-full pl-9 pr-4 border-blue-200 focus:border-blue-400"
@@ -245,30 +243,28 @@ export default function ClientsPage() {
               <Table>
                 <TableHeader className="bg-blue-50">
                   <TableRow className="border-blue-200">
-                    <TableHead className="w-[100px] text-blue-900 font-semibold">מזהה</TableHead>
-                    <TableHead className="text-blue-900 font-semibold">שם לקוח</TableHead>
+                    <TableHead className="w-[120px] text-blue-900 font-semibold">תעודת זהות</TableHead>
+                    <TableHead className="text-blue-900 font-semibold">שם</TableHead>
                     <TableHead className="hidden md:table-cell text-blue-900 font-semibold">סוג</TableHead>
                     <TableHead className="hidden md:table-cell text-blue-900 font-semibold">אימייל</TableHead>
                     <TableHead className="hidden lg:table-cell text-blue-900 font-semibold">טלפון</TableHead>
                     <TableHead className="hidden lg:table-cell text-blue-900 font-semibold">תיקים פעילים</TableHead>
-                    <TableHead className="text-blue-900 font-semibold">סטטוס</TableHead>
-                    <TableHead className="text-right text-blue-900 font-semibold">פעילות אחרונה</TableHead>
+                    <TableHead className="hidden lg:table-cell text-blue-900 font-semibold">סטטוס</TableHead>
+                    <TableHead className="hidden lg:table-cell text-blue-900 font-semibold">פעילות אחרונה</TableHead>
+                    <TableHead className="text-blue-900 font-semibold">פעולות</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredClients.map((client, index) => (
-                    <motion.tr
+                    <TableRow
                       key={client.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
                       className="hover:bg-blue-50 border-blue-100 transition-colors group"
                     >
-                      <TableCell className="font-medium text-blue-900">{client.id}</TableCell>
+                      <TableCell className="font-medium text-blue-900">{client.idNumber || 'לא צוין'}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                            {client.type === 'עסקי' ? (
+                            {client.clientType === 'business' ? (
                               <Building2 className="h-4 w-4 text-blue-600" />
                             ) : (
                               <User className="h-4 w-4 text-blue-600" />
@@ -279,7 +275,7 @@ export default function ClientsPage() {
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         <Badge variant="outline" className="border-blue-200 text-blue-700">
-                          {client.type}
+                          {client.clientType === 'individual' ? 'פרטי' : 'עסקי'}
                         </Badge>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
@@ -300,15 +296,48 @@ export default function ClientsPage() {
                           <span className="text-blue-900 font-medium">{client.activeCases}</span>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden lg:table-cell">
                         <Badge 
-                          className={`${client.statusColor} text-white`}
+                          className={`${client.status === 'פעיל' ? 'bg-green-500' : 'bg-gray-500'} text-white`}
                         >
                           {client.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right text-blue-700">{client.lastActivity}</TableCell>
-                    </motion.tr>
+                      <TableCell className="hidden lg:table-cell text-blue-700">
+                        {new Date(client.updatedAt).toLocaleDateString('he-IL')}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={() => handleViewClient(client.id)}
+                            title="צפייה בלקוח"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={() => handleEditClient(client.id)}
+                            title="עריכת לקוח"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-8 w-8 text-red-600 hover:text-red-700"
+                            onClick={() => handleDeleteClient(client.id, client.name)}
+                            title="מחיקת לקוח"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
                   ))}
                 </TableBody>
               </Table>

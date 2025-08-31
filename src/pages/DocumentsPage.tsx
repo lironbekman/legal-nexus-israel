@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -112,6 +113,7 @@ const documentCategories = [
 ];
 
 export default function DocumentsPage() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredDocuments, setFilteredDocuments] = useState(mockDocuments);
 
@@ -119,7 +121,7 @@ export default function DocumentsPage() {
     const value = e.target.value;
     setSearchTerm(value);
     
-    if (!value) {
+    if (!value.trim()) {
       setFilteredDocuments(mockDocuments);
       return;
     }
@@ -133,6 +135,10 @@ export default function DocumentsPage() {
     );
     
     setFilteredDocuments(filtered);
+  };
+
+  const handleUploadDocument = () => {
+    navigate('/documents/upload');
   };
 
   const getFileIcon = (type: string) => {
@@ -174,7 +180,7 @@ export default function DocumentsPage() {
           </p>
         </div>
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Button className="gap-2 self-end bg-blue-600 hover:bg-blue-700">
+          <Button className="gap-2 self-end bg-blue-600 hover:bg-blue-700" onClick={handleUploadDocument}>
             <Upload className="h-4 w-4" /> העלה מסמך
           </Button>
         </motion.div>
